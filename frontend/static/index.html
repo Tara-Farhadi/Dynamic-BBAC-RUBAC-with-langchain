@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUARDIAN - Transaction Monitoring System</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">🛡️</div>
+                <div class="logo-text">
+                    <h1>GUARDIAN</h1>
+                    <p>Generative User Assessment and Runtime Decision Integration Architecture Network</p>
+                </div>
+            </div>
+            <div class="connection-status" id="connectionStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Checking...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Left Panel: Bank Employee Section -->
+        <section class="panel employee-panel">
+            <div class="panel-header">
+                <h2>🏦 Bank Employee Portal</h2>
+                <p>Upload transaction data and policy documents</p>
+            </div>
+
+            <!-- Upload User Transactions CSV -->
+            <div class="upload-section">
+                <h3>📊 Upload User Transactions</h3>
+                <p class="help-text">Upload CSV files containing user transaction history. The filename should match the user name (e.g., Alice_transactions.csv)</p>
+                
+                <div class="file-upload-area" id="csvUploadArea">
+                    <input type="file" id="csvFileInput" accept=".csv" multiple hidden>
+                    <div class="upload-icon">📁</div>
+                    <p>Drag & drop CSV files here or <span class="browse-link" onclick="document.getElementById('csvFileInput').click()">browse</span></p>
+                </div>
+                
+                <div class="upload-progress" id="csvUploadProgress" style="display: none;">
+                    <div class="progress-bar"><div class="progress-fill" id="csvProgressFill"></div></div>
+                    <p class="progress-text" id="csvProgressText">Uploading...</p>
+                </div>
+                
+                <div class="upload-result" id="csvUploadResult"></div>
+            </div>
+
+            <!-- Upload Policies PDF -->
+            <div class="upload-section">
+                <h3>📋 Upload Policy Documents</h3>
+                <p class="help-text">Upload PDF files containing organizational and regulatory policies</p>
+                
+                <div class="file-upload-area" id="pdfUploadArea">
+                    <input type="file" id="pdfFileInput" accept=".pdf" multiple hidden>
+                    <div class="upload-icon">📄</div>
+                    <p>Drag & drop PDF files here or <span class="browse-link" onclick="document.getElementById('pdfFileInput').click()">browse</span></p>
+                </div>
+                
+                <div class="policy-type-select" id="policyTypeSelect" style="display: none;">
+                    <label>Policy Type:</label>
+                    <select id="policyType">
+                        <option value="organizational">Organizational Policy</option>
+                        <option value="regulatory">Regulatory Policy</option>
+                    </select>
+                </div>
+                
+                <div class="upload-progress" id="pdfUploadProgress" style="display: none;">
+                    <div class="progress-bar"><div class="progress-fill" id="pdfProgressFill"></div></div>
+                    <p class="progress-text" id="pdfProgressText">Uploading...</p>
+                </div>
+                
+                <div class="upload-result" id="pdfUploadResult"></div>
+            </div>
+
+            <!-- System Stats -->
+            <div class="system-stats">
+                <h3>📈 System Statistics</h3>
+                <div class="stats-grid" id="systemStats">
+                    <div class="stat-item">
+                        <span class="stat-value" id="statUsers">-</span>
+                        <span class="stat-label">Users Loaded</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="statTransactions">-</span>
+                        <span class="stat-label">Transactions</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="statPolicies">-</span>
+                        <span class="stat-label">Policy Chunks</span>
+                    </div>
+                </div>
+                <button class="refresh-btn" onclick="refreshStats()">🔄 Refresh Stats</button>
+            </div>
+        </section>
+
+        <!-- Right Panel: Transaction Evaluation -->
+        <section class="panel evaluation-panel">
+            <div class="panel-header">
+                <h2>💳 Transaction Evaluation</h2>
+                <p>Submit a transaction for real-time fraud analysis</p>
+            </div>
+
+            <form id="transactionForm" class="transaction-form">
+                <!-- User Identification -->
+                <div class="form-section-header">👤 User Information</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="userName">User ID (First Name)</label>
+                        <input type="text" id="userName" name="user_id" placeholder="e.g., Alice, Bob" required>
+                        <span class="help-text">Must match uploaded CSV filename</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="ccNumber">💳 Credit Card Number</label>
+                        <input type="text" id="ccNumber" name="cc_num" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19">
+                        <span class="help-text">Last 4 digits or full number</span>
+                    </div>
+                </div>
+
+                <!-- Transaction Details -->
+                <div class="form-section-header">💳 Transaction Details</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="amount">💵 Amount ($)</label>
+                        <input type="number" id="amount" name="amt" step="0.01" min="0.01" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="merchant">🏪 Merchant Name</label>
+                        <input type="text" id="merchant" name="merchant" placeholder="e.g., Walmart, Amazon" required>
+                    </div>
+                </div>
+
+                <!-- Hidden datetime field - automatically filled with current time -->
+                <input type="hidden" id="transDateTime" name="trans_date_trans_time">
+
+                <!-- Merchant Location -->
+                <div class="form-section-header">📍 Merchant Location</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="merchCity">🌆 City</label>
+                        <input type="text" id="merchCity" name="city" placeholder="e.g., New York" required>
+                        <span class="help-text">Where is the merchant located?</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="merchState">🗺️ State</label>
+                        <input type="text" id="merchState" name="state" placeholder="e.g., NY" maxlength="3" required>
+                        <span class="help-text">Two-letter state code</span>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <span class="help-text">💡 System compares this location to user's typical shopping cities/states</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span class="btn-text">🔍 Evaluate Transaction</span>
+                    <span class="btn-loader" style="display: none;">⏳ Processing...</span>
+                </button>
+            </form>
+
+            <!-- Evaluation Result -->
+            <div class="evaluation-result" id="evaluationResult" style="display: none;">
+                <h3>📊 Evaluation Result</h3>
+                
+                <div class="decision-display" id="decisionDisplay">
+                    <div class="decision-badge" id="decisionBadge">ALLOW</div>
+                    <div class="decision-details">
+                        <div class="score-row">
+                            <span class="score-label">Risk Score:</span>
+                            <div class="score-bar">
+                                <div class="score-fill" id="riskScoreFill"></div>
+                            </div>
+                            <span class="score-value" id="riskScoreValue">0%</span>
+                        </div>
+                        <div class="score-row">
+                            <span class="score-label">Behavioral:</span>
+                            <div class="score-bar">
+                                <div class="score-fill behavioral" id="behavioralScoreFill"></div>
+                            </div>
+                            <span class="score-value" id="behavioralScoreValue">0%</span>
+                        </div>
+                        <div class="score-row">
+                            <span class="score-label">Policy:</span>
+                            <div class="score-bar">
+                                <div class="score-fill policy" id="policyScoreFill"></div>
+                            </div>
+                            <span class="score-value" id="policyScoreValue">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="explanation-box" id="explanationBox">
+                    <h4>💡 Explanation</h4>
+                    <p id="explanationText"></p>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-box behavioral-evidence">
+                        <h4>🧠 Behavioral Analysis</h4>
+                        <ul id="behavioralEvidence"></ul>
+                    </div>
+                    <div class="evidence-box policy-evidence">
+                        <h4>📋 Policy Analysis</h4>
+                        <ul id="policyEvidence"></ul>
+                    </div>
+                </div>
+
+                <div class="transaction-meta">
+                    <span>Transaction ID: <code id="transactionId"></code></span>
+                    <span>Processing Time: <code id="processingTime"></code></span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>GUARDIAN v1.0 | Multi-Agent Transaction Monitoring System | Powered by RAG</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
